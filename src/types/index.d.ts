@@ -65,10 +65,10 @@ export type Call_to_action = {
   title: string;
   description: string;
   image: string;
-  button: Button;
+  button: ButtonType;
 };
 
-export type Button = {
+export type ButtonType = {
   enable: boolean;
   label: string;
   link: string;
