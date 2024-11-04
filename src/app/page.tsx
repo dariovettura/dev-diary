@@ -1,17 +1,44 @@
 import ImageFallback from "@/helpers/ImageFallback";
-import { getListPage } from "@/lib/contentParser";
-import { markdownify } from "@/lib/utils/textConverter";
+import { getListPage, getSinglePage } from "@/lib/contentParser";
+import { humanize, markdownify } from "@/lib/utils/textConverter";
+import config from "@/config/config.json";
 import CallToAction from "@/partials/CallToAction";
 import SeoMeta from "@/partials/SeoMeta";
 import Testimonials from "@/partials/Testimonials";
 import Button from "@/shortcodes/Button";
-import { ButtonType, Feature } from "@/types";
+import { ButtonType, Feature, Post } from "@/types";
 import { FaCheck } from "react-icons/fa/index.js";
+import { getAllTaxonomy, getTaxonomy } from "@/lib/taxonomyParser";
+import Link from "next/link";
+import taxonomyFilter from "@/lib/utils/taxonomyFilter";
+import BlogCard from "@/components/BlogCard";
+
+const { blog_folder } = config.settings;
+type StaticParams = () => { single: string }[];
+const categories = getTaxonomy(blog_folder, "categories");
+const allCategories = getAllTaxonomy(blog_folder, "categories");
+
+// remove dynamicParams
+export const dynamicParams = false;
+
+// generate static params
+export const generateStaticParams: StaticParams = () => {
+
+
+  const paths = categories.map((category) => ({
+    single: category,
+  }));
+
+  return paths;
+};
+
+
 
 const Home = () => {
   const homepage = getListPage("homepage/_index.md");
   const testimonial = getListPage("sections/testimonial.md");
   const callToAction = getListPage("sections/call-to-action.md");
+
   const { frontmatter } = homepage;
   const {
     banner,
@@ -21,10 +48,13 @@ const Home = () => {
     features: Feature[];
   } = frontmatter;
 
+
+
+
   return (
     <>
       <SeoMeta />
-      <section className="section pt-14">
+      <section className=" pt-14">
         <div className="container">
           <div className="row justify-center">
             <div className="mb-16 text-center lg:col-7">
@@ -59,85 +89,44 @@ const Home = () => {
                 />
               </div>
             )}
+
           </div>
         </div>
       </section>
 
-      {features.map((feature, index: number) => (
-        <section
-          key={index}
-          className={`section-sm ${index % 2 === 0 && "bg-gradient  relative"}`}
-        >
-          <div className="container">
-            <div className="row items-center justify-between">
-              <div
-                style={{ height: 400 }}
-                className={`mb:md-0 mb-6 md:col-5 h-400 ${index % 2 !== 0 && "md:order-2"
-                  }`}
-              >
-                <div className="shadow-[10px_10px] shadow-dark relative p-5 col-span-3 h-full rounded-2xl border-2 border-solid border-dark bg-white  xl:col-span-4 md:col-span-8 md:order-1 ">
-                  <div className="relative h-[90%] col-span-3 rounded-2xl border-2 border-solid border-dark  bg-white p-8  xl:col-span-4 md:col-span-8 md:order-1 "></div>
-                </div>
+      <section className="">
+        <div className="container text-center">
 
-              </div>
-              <div
-                className={`md:col-7 lg:col-6 ${index % 2 !== 0 && "md:order-1"
-                  }`}
-              >
-                <h2
-                  className="mb-4"
-
-                >Built to Meet Your Needs. Introducing GESTIO</h2>
-                <p
-                  className="mb-8 text-lg"
-
-                ><b>GESTIO</b> is your personal management system, fully customizable to fit your requirements.
-                  Fast, secure, equipped with everything you need to efficiently handle your content and affairs.
-                   Packed with features that will blow your mind.</p>
-                <ul>
-                {/* <li className="relative mb-4 pl-6" >
-                    <FaCheck className={"absolute left-0 top-1.5"} />
-                    <span> Equipped with Various Payment Gateways</span>
-                  </li> */}
-
-                  <li className="relative mb-4 pl-6" >
-                    <FaCheck className={"absolute left-0 top-1.5"} />
-                    <span>Push Notifications and Email notice</span>
-                  </li>
-                  <li className="relative mb-4 pl-6" >
-                    <FaCheck className={"absolute left-0 top-1.5"} />
-                    <span>Multiuser and Role-Based Functionality</span>
-                  </li>
-                  <li className="relative mb-4 pl-6" >
-                    <FaCheck className={"absolute left-0 top-1.5"} />
-                    <span>Easily Integratable into Existing Projects</span>
-                  </li>
-                  <Button link="/" label="Discover all app features" />
-                  {/* <li className="relative mb-4 pl-6" >
-                    <FaCheck className={"absolute left-0 top-1.5"} />
-                    <span>Available in both Native App and Progressive Web App Versions</span>
-                  </li> */}
-
-                  {/* {feature.bulletpoints.map((bullet: string) => (
-                    <li className="relative mb-4 pl-6" key={bullet}>
-                      <FaCheck className={"absolute left-0 top-1.5"} />
-                      <span dangerouslySetInnerHTML={markdownify(bullet)} />
-                    </li> */}
-                  {/* ))} */}
-                </ul>
-                {feature.button.enable && (
-                  <a
-                    className="btn btn-primary mt-5"
-                    href={feature.button.link}
+            {categories.map((category: string) => {
+              const count = allCategories.filter(
+                (c: string) => c === category,
+              ).length;
+              const posts: Post[] = getSinglePage(blog_folder);
+              const filterByCategories = taxonomyFilter(posts, "categories", category);
+              return (
+                <div className="m-3 inline-block" key={category}>
+                  <Link
+                    href={`/categories/${category}`}
+                    className="flex items-center px-4 py-8 text-xl text-dark  dark:text-darkmode-dark"
                   >
-                    {feature.button.label}
-                  </a>
-                )}
+                   <h2> {humanize(category)}</h2>
+                    <span className="ml-2 rounded bg-theme-light px-2 dark:bg-darkmode-body">
+                      {count}
+                    </span>
+                  </Link>
+                  <div className="row ">
+                  {filterByCategories.map((post: Post, index: number) => (
+              <div className="mb-14 md:col-12 lg:col-4" key={index}>
+                <BlogCard data={post} />
               </div>
+            ))}
             </div>
-          </div>
-        </section>
-      ))}
+                </div>
+              );
+            })}
+
+        </div>
+      </section>
 
       <Testimonials data={testimonial} />
       <CallToAction data={callToAction} />

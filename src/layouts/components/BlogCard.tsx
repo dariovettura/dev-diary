@@ -3,32 +3,36 @@ import dateFormat from "@/lib/utils/dateFormat";
 import { humanize, plainify, slugify } from "@/lib/utils/textConverter";
 import { Post } from "@/types";
 import Link from "next/link";
-import { FaRegFolder, FaRegUserCircle } from "react-icons/fa/index.js";
+import { FaRegFolder,  FaRegCalendar } from "react-icons/fa/index.js";
 import ImageFallback from "../helpers/ImageFallback";
+
 
 const BlogCard = ({ data }: { data: Post }) => {
   const { summary_length, blog_folder } = config.settings;
-  const { title, image, author, categories, date } = data.frontmatter;
+  const { title, image, categories, date } = data.frontmatter;
   return (
     <div className="bg-body dark:bg-darkmode-body">
-      {image && (
-        <ImageFallback
-          className="mb-6 w-full rounded"
-          src={image}
-          alt={title}
-          width={445}
-          height={230}
-        />
-      )}
-      <h4 className="mb-3">
+      <div  className={`mb:md-0 mb-6`}>
+        <div className="shadow-[10px_10px] dark:bg-darkmode-body shadow-dark dark:shadow-white relative p-5 col-span-3 h-full rounded-2xl border-2 border-solid dark:border-white border-dark bg-white  xl:col-span-4 md:col-span-8 md:order-1 ">
+
+          <div className="relative  col-span-3 rounded-2xl border-2 border-solid border-dark  dark:border-white  bg-white   xl:col-span-4 md:col-span-8 md:order-1 ">
+          {image && (
+            <ImageFallback
+              className=" w-full rounded-2xl"
+              src={image}
+              alt={title}
+              width={445}
+              height={230}
+            />
+          )}
+          </div>
+          <h4 className="mb-3 mt-3">
         <Link href={`/${blog_folder}/${data.slug}`}>{title}</Link>
       </h4>
       <ul className="mb-4">
         <li className="mr-4 inline-block">
-          <a href={`/authors/${slugify(author)}`}>
-            <FaRegUserCircle className={"-mt-1 mr-2 inline-block"} />
-            {humanize(author)}
-          </a>
+        <FaRegCalendar className={"-mt-1 mr-2 inline-block"} />
+        {date && <span className="inline-block">{dateFormat(date)}</span>}
         </li>
         <li className="mr-4 inline-block">
           <FaRegFolder className={"-mt-1 mr-2 inline-block"} />
@@ -39,7 +43,7 @@ const BlogCard = ({ data }: { data: Post }) => {
             </Link>
           ))}
         </li>
-        {date && <li className="inline-block">{dateFormat(date)}</li>}
+
       </ul>
       <p className="mb-6">
         {plainify(data.content!.slice(0, Number(summary_length)))}
@@ -50,6 +54,11 @@ const BlogCard = ({ data }: { data: Post }) => {
       >
         read more
       </Link>
+        </div>
+
+      </div>
+
+
     </div>
   );
 };
